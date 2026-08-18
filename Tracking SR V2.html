@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SR Tracking Otomatis — PBJP Pupuk Kujang</title>
+<style>
+:root {
+  --primary:#1a56a0; --primary-dk:#134080; --secondary:#e8f0fb;
+  --accent:#f59e0b; --success:#10b981; --danger:#ef4444;
+  --bg:#f0f4fa; --card:#fff; --border:#d1dbe8;
+  --text:#1e293b; --muted:#64748b; --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+
+header{background:linear-gradient(135deg,var(--primary),var(--primary-dk));color:#fff;
+  padding:14px 24px;display:flex;align-items:center;gap:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,.25)}
+header .ico{font-size:28px}
+header h1{font-size:17px;font-weight:700;line-height:1.3}
+header p{font-size:11px;opacity:.8;margin-top:2px}
+.badge{margin-left:auto;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  border-radius:8px;padding:7px 14px;text-align:right;min-width:140px}
+.badge small{display:block;font-size:10px;opacity:.7}
+.badge strong{font-size:20px}
+
+.wrap{max-width:1300px;margin:0 auto;padding:18px}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);
+  padding:18px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card-title{font-size:13px;font-weight:700;color:var(--primary);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';display:block;width:4px;height:16px;
+  background:var(--primary);border-radius:2px}
+
+/* COUNTER ROW */
+.cnt-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.cnt{flex:1;min-width:120px;background:var(--secondary);border:1px solid var(--border);
+  border-radius:var(--r);padding:11px 14px;text-align:center}
+.cnt .num{font-size:22px;font-weight:800;color:var(--primary)}
+.cnt .lbl{font-size:11px;color:var(--muted);margin-top:2px}
+.cnt.g .num{color:var(--success)} .cnt.o .num{color:var(--accent)}
+
+/* UPLOAD */
+#dz{border:2.5px dashed var(--primary);border-radius:var(--r);background:var(--secondary);
+  padding:30px 20px;text-align:center;cursor:pointer;transition:.2s;user-select:none}
+#dz:hover,#dz.over{background:#c7d9f5;border-color:var(--primary-dk)}
+#dz .dz-ico{font-size:36px;margin-bottom:8px}
+#dz p{color:var(--muted);font-size:13px}
+#fi{display:none}
+
+/* LOG */
+#log{font-size:12px;margin-top:8px;min-height:18px;color:var(--muted);
+  padding:6px 10px;background:#f8fafc;border-radius:6px;border:1px solid var(--border);
+  max-height:80px;overflow-y:auto;font-family:monospace;white-space:pre-wrap}
+.ok{color:var(--success)} .err{color:var(--danger)} .warn{color:var(--accent)}
+
+/* PROGRESS */
+#pw{display:none;margin:10px 0}
+#pb-bg{background:#e2e8f0;border-radius:99px;height:8px;overflow:hidden}
+#pb{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));
+  border-radius:99px;transition:width .3s;width:0%}
+#pt{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;
+  border:none;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-p{background:var(--primary);color:#fff}.btn-p:hover{background:var(--primary-dk)}
+.btn-s{background:var(--success);color:#fff}.btn-s:hover{background:#0d9467}
+.btn-o{background:transparent;color:var(--primary);border:1.5px solid var(--primary)}
+.btn-o:hover{background:var(--secondary)}
+.btn-d{background:var(--danger);color:#fff}.btn-d:hover{background:#dc2626}
+.btn-sm{padding:4px 11px;font-size:11px}
+
+/* CFG */
+.cfg-row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.cfg-item label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:3px}
+.cfg-item input{padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;
+  font-size:14px;font-weight:700}
+
+/* TABS */
+.tabs{display:flex;gap:3px;margin-bottom:14px;border-bottom:2px solid var(--border)}
+.tab{padding:7px 16px;border:none;background:none;font-size:13px;font-weight:600;
+  color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;
+  margin-bottom:-2px;border-radius:6px 6px 0 0;transition:.15s}
+.tab.on{color:var(--primary);border-bottom-color:var(--primary);background:var(--secondary)}
+.tab:hover{background:var(--secondary)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:var(--primary);color:#fff;padding:8px 9px;
+  text-align:left;white-space:nowrap;font-size:11px;position:sticky;top:0;z-index:2}
+tbody tr:nth-child(even){background:#f7faff}
+tbody tr:hover{background:#dbeafe}
+tbody td{padding:6px 9px;border-bottom:1px solid #edf2f9;vertical-align:middle;white-space:nowrap}
+td.nama{white-space:normal;max-width:200px;word-break:break-word}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+  z-index:1000;align-items:center;justify-content:center}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:14px;width:96%;max-width:840px;
+  max-height:92vh;overflow-y:auto;padding:22px;
+  box-shadow:0 8px 40px rgba(0,0,0,.25);position:relative;
+  animation:mi .2s ease}
+@keyframes mi{from{transform:scale(.93) translateY(-14px);opacity:0}to{transform:none;opacity:1}}
+.modal-title{font-size:15px;font-weight:700;color:var(--primary);margin-bottom:14px}
+.mcl{position:absolute;top:14px;right:14px;background:none;border:none;
+  font-size:22px;cursor:pointer;color:var(--muted)}
+.mcl:hover{color:var(--danger)}
+
+/* PREVIEW GRID */
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
+.pf label{font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.4px}
+.pf input,.pf select{display:block;margin-top:3px;width:100%;
+  padding:7px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:13px}
+.pf input:focus,.pf select:focus{outline:2px solid var(--primary);border-color:transparent}
+.pf.full{grid-column:1/-1}
+
+/* NOMOR BOX */
+.nb-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.nb{flex:1;min-width:160px;background:#fffbeb;border:1.5px solid var(--accent);
+  border-radius:8px;padding:9px 12px}
+.nb .nl{font-size:10px;color:var(--muted);font-weight:700}
+.nb .nv{font-size:14px;font-weight:700;color:var(--primary-dk);margin-top:2px}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:#1e293b;color:#fff;padding:9px 20px;border-radius:99px;
+  font-size:12px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.empty .ei{font-size:44px;margin-bottom:10px}
+
+/* INFO BAR */
+.info-bar{font-size:10.5px;color:var(--muted);background:#f8fafc;border:1px solid var(--border);
+  border-radius:6px;padding:7px 11px;margin-bottom:10px;line-height:1.8}
+
+@media(max-width:600px){.pg{grid-template-columns:1fr}.nb-row{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="ico">📋</div>
+  <div>
+    <h1>SR Tracking Otomatis — PBJP</h1>
+    <p>PT Pupuk Kujang · PDF Daun Jati → Sheet Rekap Excel</p>
+  </div>
+  <div class="badge">
+    <small>NO. TERAKHIR</small>
+    <strong id="h-last">340</strong>
+    <small>NEXT: <span id="h-next" style="color:#fbbf24;font-weight:700">341</span></small>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- STATUS PDF.JS -->
+  <div id="pdfjs-status" style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;
+    padding:10px 14px;margin-bottom:14px;font-size:12px;display:flex;align-items:center;gap:8px">
+    ⏳ Memuat library PDF.js... (tunggu sebentar)
+  </div>
+
+  <!-- COUNTER -->
+  <div class="cnt-row">
+    <div class="cnt"><div class="num" id="c-total">0</div><div class="lbl">SR Sesi Ini</div></div>
+    <div class="cnt g"><div class="num" id="c-done">0</div><div class="lbl">Siap Copy</div></div>
+    <div class="cnt o"><div class="num" id="c-no">341</div><div class="lbl">No. PBJP Berikut</div></div>
+    <div class="cnt"><div class="num" id="c-jp">JP-5516</div><div class="lbl">Tracking Berikut</div></div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="card">
+    <div class="card-title">⚙️ Konfigurasi Penomoran</div>
+    <div class="cfg-row">
+      <div class="cfg-item">
+        <label>No. Rekap Terakhir</label>
+        <input type="number" id="cfg-no" value="340" min="1" style="width:110px" oninput="recalc()">
+      </div>
+      <div class="cfg-item">
+        <label>No. JP Terakhir (angka)</label>
+        <input type="number" id="cfg-jp" value="5515" min="1" style="width:130px" oninput="recalc()">
+      </div>
+      <div class="cfg-item">
+        <label>Tanggal Date IN</label>
+        <input type="date" id="cfg-date" style="width:170px;font-size:13px;font-weight:600" oninput="recalc()">
+      </div>
+      <button class="btn btn-o btn-sm" onclick="recalc()" style="margin-bottom:1px">🔄 Update</button>
+    </div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="card">
+    <div class="card-title">📤 Upload PDF Daun Jati</div>
+    <div id="dz">
+      <div class="dz-ico">📄</div>
+      <p><strong>Klik di sini</strong> atau seret file PDF ke area ini</p>
+      <p style="margin-top:4px;font-size:11px;opacity:.7">Bisa banyak file sekaligus · PDF dari Save Page As daunjati.my.id</p>
+    </div>
+    <input type="file" id="fi" accept=".pdf" multiple>
+
+    <div id="pw">
+      <div id="pb-bg"><div id="pb"></div></div>
+      <div id="pt"></div>
+    </div>
+    <div id="log">Menunggu file...</div>
+
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-p" id="btn-go" disabled onclick="startProcess()">🔍 Proses Scraping</button>
+      <button class="btn btn-o" onclick="resetAll()">🗑️ Reset</button>
+      <span id="file-label" style="font-size:12px;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on" id="tab-h" onclick="sw('h')">📊 Hasil Ekstraksi</button>
+    <button class="tab" id="tab-m" onclick="sw('m')">✏️ Tambah Manual</button>
+    <button class="tab" id="tab-g" onclick="sw('g')">📖 Panduan</button>
+  </div>
+
+  <!-- PANE HASIL -->
+  <div id="pane-h">
+    <div class="card" style="padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+        <div class="card-title" style="margin-bottom:0">Daftar SR — urutan kolom = sheet Rekap</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-s btn-sm" onclick="copyAll()">📋 Copy Semua</button>
+          <button class="btn btn-o btn-sm" onclick="doCSV()">💾 CSV</button>
+        </div>
+      </div>
+      <div class="info-bar">
+        📌 Urutan 36 kolom copy = sheet Rekap:
+        <strong>A</strong>:NO · <strong>B</strong>:DATE IN · C–H:kosong ·
+        <strong>J</strong>:HPS · <strong>K</strong>:NO BAG · <strong>L</strong>:NO DEPT ·
+        <strong>M</strong>:PBJP · <strong>N</strong>:TRACKING · <strong>O</strong>:NAMA PEKERJAAN ·
+        <strong>P</strong>:LINGKUP · <strong>Q</strong>:JENIS ANGGARAN ·
+        <strong>R</strong>:COST CENTER · <strong>S</strong>:GL ACCOUNT · T–U:kosong ·
+        <strong>V</strong>:REQUESTER · <strong>W</strong>:DEPARTEMEN · X–AH:kosong ·
+        <strong style="color:var(--danger)">AI</strong>:EMERGENCY (v / kosong)
+      </div>
+      <div id="tbl-wrap">
+        <div class="empty"><div class="ei">📭</div><p>Belum ada data.<br>Upload PDF lalu klik <strong>Proses Scraping</strong>.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANE MANUAL -->
+  <div id="pane-m" style="display:none">
+    <div class="card">
+      <div class="card-title">✏️ Input Manual SR</div>
+      <div class="pg">
+        <div class="pf"><label>No. BAG</label><input type="text" id="m-bag" placeholder="mis. 24/SR/WLI/VIII/2026"></div>
+        <div class="pf"><label>No. DEPT</label><input type="text" id="m-dept-no" placeholder="mis. 24/SR/D2350/VIII/2026"></div>
+        <div class="pf full">
+          <label>Nama Pekerjaan Jasa — maks 40 karakter (persis dari field SAP Daun Jati)</label>
+          <input type="text" id="m-nama" maxlength="40" placeholder="mis. Assesment Motor UGB-302 Urea K1A"
+            oninput="document.getElementById('m-nc').textContent=this.value.length+'/40'">
+          <small id="m-nc" style="color:var(--muted);font-size:11px">0/40</small>
+        </div>
+        <div class="pf"><label>HPS / Total Estimasi Biaya (Rp)</label><input type="number" id="m-hps" placeholder="45500000"></div>
+        <div class="pf"><label>Cost Center</label><input type="text" id="m-cc" placeholder="C002224000"></div>
+        <div class="pf"><label>G/L Account</label><input type="text" id="m-gl" placeholder="630210001"></div>
+        <div class="pf">
+          <label>Jenis Anggaran</label>
+          <select id="m-ja"><option value="">— Pilih —</option>
+            <option>RUTIN</option><option>PERTA</option><option>INVESTASI</option>
+            <option>KONTRAK PAYUNG</option><option>RKAP</option></select>
+        </div>
+        <div class="pf">
+          <label>Surat Emergency</label>
+          <select id="m-emg">
+            <option value="">Tidak (kosong)</option>
+            <option value="v">Ya → "v"</option></select>
+        </div>
+        <div class="pf"><label>Requester / Bagian</label><input type="text" id="m-req" placeholder="mis. WLI"></div>
+        <div class="pf"><label>Departemen</label><input type="text" id="m-dep" placeholder="mis. DEPT. PEMELIHARAAN LIST INST & A2B"></div>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn btn-p" onclick="addManual()">➕ Tambahkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANE PANDUAN -->
+  <div id="pane-g" style="display:none">
+    <div class="card">
+      <div class="card-title">📖 Cara Penggunaan</div>
+      <ol style="line-height:2.3;padding-left:20px;font-size:13px">
+        <li>Buka halaman SR di <strong>daunjati.my.id</strong>, lalu <strong>Ctrl+P → Save as PDF</strong>.</li>
+        <li>Set <strong>No. Rekap Terakhir</strong> dan <strong>No. JP Terakhir</strong> di Konfigurasi sesuai data terbaru Excel.</li>
+        <li>Upload PDF (bisa banyak sekaligus), tunggu status library PDF.js <span style="color:var(--success)">✅ Siap</span>.</li>
+        <li>Klik <strong>Proses Scraping</strong> — setiap file akan memunculkan modal preview.</li>
+        <li>Cek & edit hasil ekstraksi di modal, lalu klik <strong>Konfirmasi & Tambahkan</strong>.</li>
+        <li>Klik <strong>📋 Copy</strong> di baris yang diinginkan → paste ke Excel kolom A baris baru.</li>
+      </ol>
+      <div style="margin-top:14px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:12px">
+        <strong>💡 Tips:</strong><br>
+        • Kolom B s/d H (DATE OUT, persetujuan, dll) dikosongkan — isi manual setelah proses persetujuan.<br>
+        • Emergency: <code>v</code> jika ada centang di form, kosong jika tidak.<br>
+        • Nama Pekerjaan diambil dari field "<em>NAMA PEKERJAAN JASA (40 Karakter...)</em>" — nilai sebelah kanannya.<br>
+        • Kolom P (Lingkup) diisi sama dengan Nama Pekerjaan secara default; edit manual jika perlu.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <button class="mcl" onclick="closeMod()">✕</button>
+    <div class="modal-title" id="mod-title">🔍 Preview Hasil Ekstraksi</div>
+    <div id="mod-body"></div>
+    <div style="margin-top:18px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-o" onclick="closeMod()">Batal / Lewati</button>
+      <button class="btn btn-p" onclick="confirmAdd()">✅ Konfirmasi & Tambahkan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────
+// 1. LOAD PDF.JS DINAMIS — lebih terkontrol dari CDN
+// ─────────────────────────────────────────────────────
+const PDFJS_VER = '3.11.174';
+const PDFJS_CDN = [
+  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.min.js`,
+  `https://unpkg.com/pdfjs-dist@${PDFJS_VER}/build/pdf.min.js`,
+  `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VER}/build/pdf.min.js`
+];
+const WORKER_CDN = [
+  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VER}/pdf.worker.min.js`,
+  `https://unpkg.com/pdfjs-dist@${PDFJS_VER}/build/pdf.worker.min.js`,
+  `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VER}/build/pdf.worker.min.js`
+];
+
+let pdfjsLib = null;
+let pdfjsReady = false;
+
+function setLibStatus(msg, type='') {
+  const el = document.getElementById('pdfjs-status');
+  const colors = {ok:'#f0fdf4',err:'#fef2f2',warn:'#fef3c7'};
+  const borders = {ok:'#bbf7d0',err:'#fecaca',warn:'#fde68a'};
+  el.style.background = colors[type] || '#fef3c7';
+  el.style.border = `1px solid ${borders[type]||'#fde68a'}`;
+  el.innerHTML = msg;
+}
+
+async function loadScript(url) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = url; s.async = true;
+    s.onload = res;
+    s.onerror = () => rej(new Error('Gagal load: ' + url));
+    document.head.appendChild(s);
+  });
+}
+
+async function initPdfJs() {
+  for (let i = 0; i < PDFJS_CDN.length; i++) {
+    try {
+      setLibStatus(`⏳ Mencoba CDN ${i+1}/${PDFJS_CDN.length}...`);
+      await loadScript(PDFJS_CDN[i]);
+      if (typeof window.pdfjsLib !== 'undefined') {
+        pdfjsLib = window.pdfjsLib;
+      } else if (typeof window['pdfjs-dist/build/pdf'] !== 'undefined') {
+        pdfjsLib = window['pdfjs-dist/build/pdf'];
+      } else {
+        // coba ambil dari global yang mungkin ada
+        if (window.pdfjsLib) pdfjsLib = window.pdfjsLib;
+      }
+      if (pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = WORKER_CDN[i];
+        pdfjsReady = true;
+        setLibStatus('✅ Library PDF.js siap digunakan — silakan upload PDF.', 'ok');
+        addLog('PDF.js v'+PDFJS_VER+' siap (CDN '+(i+1)+')', 'ok');
+        return;
+      }
+    } catch(e) {
+      addLog('CDN '+(i+1)+' gagal: '+e.message, 'warn');
+    }
+  }
+  // Final fallback: coba cara lain
+  setLibStatus('⚠️ Tidak bisa load PDF.js dari CDN. Coba <strong>buka lewat browser lain</strong> atau pastikan <strong>koneksi internet aktif</strong>. Anda tetap bisa pakai fitur <strong>Input Manual</strong>.', 'warn');
+  addLog('Semua CDN PDF.js gagal. Gunakan Input Manual.', 'err');
+}
+
+// ─────────────────────────────────────────────────────
+// 2. STATE & KONSTANTA
+// ─────────────────────────────────────────────────────
+const BULAN = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+
+const KODE_DEPT = {
+  'HAR MEKANIK':1,'BENG':1,'WORKSHOP':1,'SIPIL':1,'HARMEK':1,'MEK1B':1,'MEK':1,
+  'HAR LISTRIK':2,'INSTRUMENT':2,'A2B':2,'WLI':2,'LIST':2,'INST':2,
+  'UTILITAS':3,'AMMONIA':3,'PROSES':3,
+  'INSPEKSI':4,'INSTATIK':4,'ITK':4,'ROTATING':4,'INSROTATING':4,
+  'RENDAL':5,'RENHAR':5,'RPK':5,'D2240':5,
+  'JASPIL':6,'K3LH':6,'GUDANG':6,'NPK':6,'LAB':6,'PPE':6,'OPNPK':6,'D2350':6,
+};
+
+let srList = [];
+let pending = null;
+let files   = [];
+
+function kode(req, noBag) {
+  const chk = s => {
+    if (!s) return 0;
+    const u = s.toUpperCase();
+    for (const [k,v] of Object.entries(KODE_DEPT)) if (u.includes(k)) return v;
+    return 0;
+  };
+  return chk(req) || chk(noBag) || 1;
+}
+
+// ─────────────────────────────────────────────────────
+// 3. CFG / NOMOR
+// ─────────────────────────────────────────────────────
+function cfg() {
+  return {
+    lastNo: parseInt(document.getElementById('cfg-no').value)||340,
+    lastJP: parseInt(document.getElementById('cfg-jp').value)||5515,
+    dateIn: (() => { const v=document.getElementById('cfg-date').value; return v?new Date(v):new Date(); })()
+  };
+}
+
+function genPBJP(n, dt) {
+  return `${String(n).padStart(3,'0')}/SR/PBJP/${BULAN[dt.getMonth()]}/${dt.getFullYear()}`;
+}
+function genJP(n, k) { return `JP-${n}-${k}`; }
+
+function recalc() {
+  const {lastNo, lastJP} = cfg();
+  const nxt = lastNo + 1 + srList.length;
+  const njp = lastJP + 1 + srList.length;
+  document.getElementById('h-last').textContent = lastNo;
+  document.getElementById('h-next').textContent = lastNo + 1;
+  document.getElementById('c-no').textContent   = nxt;
+  document.getElementById('c-jp').textContent   = 'JP-' + njp;
+  reindex(); render();
+}
+
+function reindex() {
+  const {lastNo, lastJP, dateIn: cd} = cfg();
+  srList.forEach((sr, i) => {
+    const n = lastNo + 1 + i;
+    const j = lastJP + 1 + i;
+    const k = kode(sr.req, sr.noBag);
+    const dt = sr.dateIn || cd;
+    sr.no = n;
+    sr.pbjp = genPBJP(n, dt);
+    sr.tracking = genJP(j, k);
+  });
+}
+
+// ─────────────────────────────────────────────────────
+// 4. UPLOAD / DRAG DROP
+// ─────────────────────────────────────────────────────
+const dz = document.getElementById('dz');
+const fi = document.getElementById('fi');
+
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  setFiles([...e.dataTransfer.files].filter(f => f.name.toLowerCase().endsWith('.pdf')));
+});
+fi.addEventListener('change', () => {
+  setFiles([...fi.files].filter(f => f.name.toLowerCase().endsWith('.pdf')));
+});
+
+function setFiles(list) {
+  if (!list.length) { addLog('⚠️ Tidak ada file PDF.','warn'); return; }
+  files = list;
+  document.getElementById('file-label').textContent = `${list.length} file terpilih: ${list.map(f=>f.name).join(', ')}`;
+  document.getElementById('btn-go').disabled = false;
+  addLog(`📂 ${list.length} file PDF siap diproses.`, 'ok');
+  dz.innerHTML = `<div class="dz-ico">✅</div><p><strong style="color:var(--success)">${list.length} file terpilih</strong></p><p style="font-size:11px">${list.map(f=>f.name).join(' · ')}</p>`;
+}
+
+// ─────────────────────────────────────────────────────
+// 5. PROSES SCRAPING
+// ─────────────────────────────────────────────────────
+async function startProcess() {
+  if (!files.length) return;
+  if (!pdfjsReady) {
+    addLog('❌ PDF.js belum siap. Tunggu sebentar atau refresh halaman.', 'err');
+    return;
+  }
+  document.getElementById('btn-go').disabled = true;
+  showProg(0, 'Memulai...');
+
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    addLog(`📄 Membaca [${i+1}/${files.length}]: ${f.name}`);
+    showProg(Math.round((i/files.length)*80), `File ${i+1}/${files.length}: ${f.name}`);
+    try {
+      const txt = await readPDF(f);
+      addLog(`  → Teks diambil: ${txt.length} karakter`, 'ok');
+      const data = parse(txt);
+      data._fn = f.name;
+      pending = data;
+      showModal(data);
+      await waitModal();
+    } catch(e) {
+      addLog(`❌ Error pada ${f.name}: ${e.message}`, 'err');
+      console.error(e);
+    }
+  }
+
+  showProg(100, 'Selesai!');
+  setTimeout(hideProg, 2000);
+  addLog(`✅ Selesai memproses ${files.length} file.`, 'ok');
+  document.getElementById('btn-go').disabled = false;
+}
+
+async function readPDF(file) {
+  addLog('  → Membaca buffer PDF...', '');
+  const buf = await file.arrayBuffer();
+  addLog('  → Buffer OK, memuat dengan PDF.js...', '');
+  const loadTask = pdfjsLib.getDocument({ data: buf });
+  const pdf = await loadTask.promise;
+  addLog(`  → PDF dimuat: ${pdf.numPages} halaman`, 'ok');
+
+  let full = '';
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    let prevY = null;
+    for (const item of content.items) {
+      if (!item.str) continue;
+      const y = Math.round(item.transform[5]);
+      if (prevY !== null && Math.abs(y - prevY) > 4) full += '\n';
+      full += item.str + ' ';
+      prevY = y;
+    }
+    full += '\n';
+  }
+  return full;
+}
+
+// ─────────────────────────────────────────────────────
+// 6. PARSER
+// ─────────────────────────────────────────────────────
+function parse(raw) {
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+
+  // ── NAMA PEKERJAAN JASA ──
+  // Ambil nilai di sebelah kanan "NAMA PEKERJAAN JASA (40 Karakter...)"
+  // Pola di PDF Daun Jati: label dan nilai terpisah oleh ":"
+  let nama = '';
+
+  // Coba pola 1-baris: "NAMA PEKERJAAN JASA ... : Nilai"
+  const namaM = raw.match(
+    /NAMA PEKERJAAN JASA[^:\n]*?:\s*([^\n]{3,80})/i
+  );
+  if (namaM) {
+    nama = namaM[1].trim().replace(/^\s*[:|\s]+/, '').trim();
+  }
+
+  // Fallback: baris setelah label
+  if (!nama || nama.length < 3) {
+    const idx = lines.findIndex(l =>
+      /NAMA PEKERJAAN JASA/i.test(l) && /40 KARAKTER/i.test(l)
+    );
+    if (idx >= 0) {
+      for (let k = idx + 1; k < Math.min(idx + 5, lines.length); k++) {
+        const c = lines[k].replace(/^[:\|\s]+/, '').trim();
+        if (c.length > 3 && !/^(DETAIL|MATRIAL|EQUIPMENT|LINGKUP|NAMA PEKERJAAN)/i.test(c)) {
+          nama = c; break;
+        }
+      }
+    }
+    // Fallback 2: cari baris tepat setelah "40 Karakter"
+    if (!nama) {
+      const idx2 = lines.findIndex(l => /40 Karakter/i.test(l));
+      if (idx2 >= 0 && lines[idx2+1]) {
+        const c = lines[idx2+1].replace(/^[:\|\s]+/, '').trim();
+        if (c.length > 3) nama = c;
+      }
+    }
+  }
+
+  // Bersihkan & potong 40 karakter
+  nama = nama.replace(/\s+/g,' ').trim().substring(0, 40);
+
+  // ── HPS / TOTAL ESTIMASI BIAYA ──
+  let hps = '';
+  const hpsM = raw.match(/TOTAL ESTIMASI BIAYA\s*(?::\s*)?Rp[\s\.]*([\d\.,]+)/i)
+            || raw.match(/Rp\s*([\d\.]+(?:\.\d{3})*)\s*(?:\(Belum|$)/im)
+            || raw.match(/(\d{2,3}(?:\.\d{3})+(?:,\d+)?)\s*(?:Belum|$)/m);
+  if (hpsM) hps = hpsM[1].replace(/[^\d]/g,'');
+
+  // ── COST CENTER ──
+  let cc = '';
+  const ccM = raw.match(/(C\d{9})/i);
+  if (ccM) cc = ccM[1].toUpperCase();
+
+  // ── GL ACCOUNT ──
+  let gl = '';
+  const glM = raw.match(/(?:GL|G\/L)\s*ACCOUNT\s*[:\s]*(\d{8,9})/i)
+           || raw.match(/(6[0-9]{8}|1[0-2][0-9]{7})/);
+  if (glM) gl = glM[1];
+
+  // ── JENIS ANGGARAN ──
+  let ja = '';
+  const jaM = raw.match(/JENIS ANGGARAN\s*[:\s]*(RUTIN|PERTA|INVESTASI|KONTRAK PAYUNG|RKAP)/i)
+           || raw.match(/\b(RUTIN|PERTA|INVESTASI|KONTRAK PAYUNG)\b/i);
+  if (jaM) ja = jaM[1].toUpperCase().trim();
+
+  // ── EMERGENCY ──
+  // Pola Daun Jati: "V SURAT EMERGENCY" atau "SURAT EMERGENCY V" atau kotak centang
+  const emgM = raw.match(/(?:^|\s)(V|✓|√|☑)\s*SURAT EMERGENCY/im)
+            || raw.match(/SURAT EMERGENCY\s*(V|✓|√|☑)/i)
+            || raw.match(/\[V\]\s*SURAT EMERGENCY/i)
+            || raw.match(/SURAT EMERGENCY\s*\[V\]/i);
+  const emg = emgM ? 'v' : '';
+
+  // ── NO. BAG ──
+  let noBag = '';
+  // Coba pola nomor SR: angka/SR/KODE/BULANROMAWI/TAHUN
+  const srM = raw.match(/(\d{1,3}\/SR\/[A-Z0-9\-]+\/[IVX]+\/20\d{2})/i);
+  if (srM) noBag = srM[1];
+  // Fallback dari label
+  if (!noBag) {
+    const m2 = raw.match(/NO\.?\s*BAG\s*[:\s]+([A-Za-z0-9\/\-]+)/i);
+    if (m2) noBag = m2[1].trim();
+  }
+
+  // ── NO DEPT ──
+  let noDept = noBag; // default sama
+  const ndM = raw.match(/NO\.?\s*DEPT\s*[:\s]+([^\n]+)/i);
+  if (ndM) noDept = ndM[1].trim();
+
+  // ── REQUESTER ──
+  let req = '';
+  // Dari kolom tanda tangan "Pertimbangan Oleh"
+  const pM = raw.match(/Pertimbangan Oleh[\s\S]{1,400}?(?:AVP|VP|Manager)\.?\s*(?:Bag\.?\s*)?([A-Z][A-Z0-9\.\s\&\-]{2,40})/i);
+  if (pM) req = pM[1].trim().split('\n')[0].replace(/\s+/g,' ').trim();
+  // Fallback: kode dari No. BAG
+  if (!req && noBag) {
+    const parts = noBag.split('/');
+    if (parts[2]) req = parts[2].toUpperCase();
+  }
+
+  // ── DEPARTEMEN ──
+  let dep = '';
+  const dM = raw.match(/Disetujui Oleh[\s\S]{1,400}?(?:VP|Manager)\.?\s*Dep\.?\s*([^\n]+)/i)
+          || raw.match(/(?:VP|Manager)\.?\s*Dep\.?\s+([^\n]+)/i);
+  if (dM) dep = 'DEPT. ' + dM[1].trim().toUpperCase().split('\n')[0];
+
+  // ── DATE IN ──
+  let dateIn = cfg().dateIn;
+  const dtM = raw.match(/INPUT DATE\s*[:\s]+([^\n]{5,30})/i);
+  if (dtM) {
+    const d = new Date(dtM[1].trim());
+    if (!isNaN(d)) dateIn = d;
+  }
+
+  return { noBag, noDept, nama, hps, cc, gl, ja, emg, req, dep, dateIn };
+}
+
+// ─────────────────────────────────────────────────────
+// 7. MODAL
+// ─────────────────────────────────────────────────────
+let _res = null;
+function waitModal() { return new Promise(r => { _res = r; }); }
+function closeMod() {
+  document.getElementById('ov').classList.remove('show');
+  if (_res) { _res(); _res = null; }
+}
+
+function showModal(data) {
+  const {lastNo, lastJP, dateIn: cd} = cfg();
+  const n  = lastNo + 1 + srList.length;
+  const j  = lastJP + 1 + srList.length;
+  const k  = kode(data.req, data.noBag);
+  const dt = data.dateIn || cd;
+
+  document.getElementById('mod-title').textContent =
+    `🔍 Preview Ekstraksi — ${data._fn||'PDF'}`;
+
+  document.getElementById('mod-body').innerHTML = `
+    <div class="nb-row">
+      <div class="nb"><div class="nl">A · NO. REKAP</div><div class="nv">${n}</div></div>
+      <div class="nb"><div class="nl">M · NO. PBJP (auto)</div><div class="nv">${genPBJP(n,dt)}</div></div>
+      <div class="nb"><div class="nl">N · TRACKING JP (auto)</div><div class="nv">${genJP(j,k)}</div></div>
+    </div>
+    <hr style="margin:12px 0;border:none;border-top:1px solid var(--border)">
+    <div class="pg">
+      ${mf('K · No. BAG (Nomor SR Bagian)', data.noBag, 'p-bag')}
+      ${mf('L · No. DEPT (No SPRR/SR Dept)', data.noDept, 'p-dept')}
+      ${mf('O · Nama Pekerjaan Jasa — 40 kar. (dari field SAP)', data.nama, 'p-nama', false, 40)}
+      ${mf('J · HPS / Total Estimasi Biaya (Rp)', data.hps, 'p-hps', true)}
+      ${mf('R · Cost Center', data.cc, 'p-cc')}
+      ${mf('S · G/L Account', data.gl, 'p-gl')}
+      ${msel('Q · Jenis Anggaran', data.ja, 'p-ja')}
+      ${msel2('AI · Surat Emergency', data.emg, 'p-emg')}
+      ${mf('V · Requester / Bagian', data.req, 'p-req')}
+      ${mf('W · Departemen', data.dep, 'p-dep', false, 0, true)}
+      ${mf('B · Date IN', iso(data.dateIn||cd), 'p-dt')}
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border-radius:6px;
+      border:1px solid #bbf7d0;font-size:11px;color:#166534">
+      ✏️ Semua field bisa diedit. Klik <strong>Konfirmasi & Tambahkan</strong> setelah selesai memeriksa.
+    </div>
+  `;
+  document.getElementById('ov').classList.add('show');
+}
+
+function mf(label, val, id, isNum=false, maxLen=0, full=false) {
+  const cls = full ? 'pf full' : 'pf';
+  const ml  = maxLen ? ` maxlength="${maxLen}"` : '';
+  const tp  = isNum ? 'number' : 'text';
+  const cnt = maxLen ? `<small id="${id}-c" style="font-size:10px;color:var(--muted)">${(val||'').length}/${maxLen}</small>` : '';
+  const oi  = maxLen ? ` oninput="document.getElementById('${id}-c').textContent=this.value.length+'/${maxLen}'"` : '';
+  return `<div class="${cls}"><label>${label}</label>
+    <input type="${tp}" id="${id}" value="${esc(val||'')}"${ml}${oi}>
+    ${cnt}</div>`;
+}
+
+function msel(label, val, id) {
+  const opts = ['RUTIN','PERTA','INVESTASI','KONTRAK PAYUNG','RKAP'];
+  return `<div class="pf"><label>${label}</label><select id="${id}">
+    ${opts.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('')}
+  </select></div>`;
+}
+function msel2(label, val, id) {
+  return `<div class="pf"><label>${label}</label><select id="${id}">
+    <option value="" ${val===''?'selected':''}>Tidak (kosong)</option>
+    <option value="v" ${val==='v'?'selected':''}>Ya → "v"</option>
+  </select></div>`;
+}
+
+function confirmAdd() {
+  const gv = id => (document.getElementById(id)?.value||'').trim();
+  const {lastNo, lastJP} = cfg();
+  const n  = lastNo + 1 + srList.length;
+  const j  = lastJP + 1 + srList.length;
+  const bag = gv('p-bag');
+  const req = gv('p-req');
+  const k   = kode(req, bag);
+  let dt  = cfg().dateIn;
+  const dv = gv('p-dt');
+  if (dv) { const d=new Date(dv); if(!isNaN(d)) dt=d; }
+
+  srList.push({
+    no: n, dateIn: dt,
+    hps:     gv('p-hps'),
+    noBag:   bag,
+    noDept:  gv('p-dept'),
+    pbjp:    genPBJP(n, dt),
+    tracking:genJP(j, k),
+    nama:    gv('p-nama').substring(0,40),
+    ja:      gv('p-ja'),
+    cc:      gv('p-cc'),
+    gl:      gv('p-gl'),
+    req,
+    dep:     gv('p-dep'),
+    emg:     gv('p-emg'),
+    _fn:     pending?._fn||'Manual',
+  });
+  updateCnt(); render(); closeMod();
+  toast(`✅ SR #${n} ditambahkan!`);
+}
+
+// ─────────────────────────────────────────────────────
+// 8. BANGUN BARIS COPY — PERSIS URUTAN KOLOM SHEET REKAP
+// ─────────────────────────────────────────────────────
+// A:NO  B:DATE IN  C:DATE OUT  D:SUPTD  E:MANAGER  F:GM  G:DIRPOD
+// H:SEND TO ANGGARAN  I:MEMO  J:HPS/OE
+// K:NOMOR SR BAGIAN  L:NO SPRR/SR DEPT  M:NO SR(PBJP)  N:TRACKING
+// O:NAMA PEKERJAAN  P:LINGKUP  Q:JENIS ANGGARAN
+// R:COST CENTER  S:GL ACCOUNT  T:EQUIPMENT  U:LOKASI PABRIK
+// V:REQUESTER  W:DEPARTEMENT
+// X:NOMOR WR  Y:NOMOR WO  Z:NOMOR PR  AA:DUR  AB:SPPH  AC:NOMOR PO
+// AD:BASTP  AE:PROGRES PAYMENT  AF:REALISASI 100%  AG:PROGRES STATUS
+// AH:KETERANGAN SUMBER HPS  AI:NO MEMO EMERGENCY  AJ:KET LAIN-LAIN
+
+function buildRow(sr) {
+  return [
+    sr.no,            // A: NO
+    iso(sr.dateIn),   // B: DATE IN
+    '',               // C: DATE OUT
+    '',               // D: SUPTD
+    '',               // E: MANAGER
+    '',               // F: GM
+    '',               // G: DIRPOD
+    '',               // H: SEND TO ANGGARAN
+    '',               // I: MEMO
+    sr.hps,           // J: HPS/OE
+    sr.noBag,         // K: NOMOR SR BAGIAN
+    sr.noDept,        // L: NO SPRR / SR DEPT
+    sr.pbjp,          // M: NO SR PBJP
+    sr.tracking,      // N: TRACKING NUMBER
+    sr.nama,          // O: NAMA PEKERJAAN JASA
+    sr.nama,          // P: LINGKUP (default sama)
+    sr.ja,            // Q: JENIS ANGGARAN
+    sr.cc,            // R: COST CENTER
+    sr.gl,            // S: G/L ACCOUNT
+    '',               // T: EQUIPMENT
+    '',               // U: LOKASI PABRIK
+    sr.req,           // V: REQUESTER
+    sr.dep,           // W: DEPARTEMENT
+    '',               // X: NOMOR WR
+    '',               // Y: NOMOR WO
+    '',               // Z: NOMOR PR
+    '',               // AA: DUR
+    '',               // AB: SPPH
+    '',               // AC: NOMOR PO
+    '',               // AD: BASTP
+    '',               // AE: PROGRES PAYMENT
+    '',               // AF: REALISASI 100%
+    '',               // AG: PROGRES STATUS
+    '',               // AH: KETERANGAN SUMBER HPS
+    sr.emg,           // AI: NO MEMO EMERGENCY ← "v" atau ""
+    '',               // AJ: KET LAIN-LAIN
+  ].join('\t');
+}
+
+// ─────────────────────────────────────────────────────
+// 9. RENDER TABEL
+// ─────────────────────────────────────────────────────
+function render() {
+  const w = document.getElementById('tbl-wrap');
+  if (!srList.length) {
+    w.innerHTML = `<div class="empty"><div class="ei">📭</div>
+      <p>Belum ada data. Upload PDF lalu klik <strong>Proses Scraping</strong>.</p></div>`;
+    return;
+  }
+  let h = `<div class="tbl-wrap"><table><thead><tr>
+    <th>A: NO</th><th>B: DATE IN</th><th>J: HPS</th>
+    <th>K: NO BAG</th><th>L: NO DEPT</th>
+    <th>M: NO PBJP</th><th>N: TRACKING</th>
+    <th>O: NAMA PEKERJAAN</th>
+    <th>Q: JENIS</th><th>R: COST CENTER</th><th>S: GL</th>
+    <th>V: REQUESTER</th><th>W: DEPT</th>
+    <th>AI: EMG</th><th>Aksi</th>
+  </tr></thead><tbody>`;
+
+  srList.forEach((sr, i) => {
+    const emgHtml = sr.emg === 'v'
+      ? `<span style="color:var(--danger);font-weight:800;font-size:15px">v 🚨</span>`
+      : `<span style="color:#cbd5e1;font-size:12px">—</span>`;
+    h += `<tr>
+      <td style="font-weight:700;color:var(--primary)">${sr.no}</td>
+      <td>${iso(sr.dateIn)}</td>
+      <td>${rpFmt(sr.hps)}</td>
+      <td style="font-size:11px">${esc(sr.noBag)}</td>
+      <td style="font-size:11px">${esc(sr.noDept)}</td>
+      <td><strong style="color:var(--primary);font-size:11px">${esc(sr.pbjp)}</strong></td>
+      <td><strong style="font-size:11px">${esc(sr.tracking)}</strong></td>
+      <td class="nama">${esc(sr.nama)}</td>
+      <td>${esc(sr.ja)}</td>
+      <td style="font-size:11px">${esc(sr.cc)}</td>
+      <td style="font-size:11px">${esc(sr.gl)}</td>
+      <td style="font-size:11px">${esc(sr.req)}</td>
+      <td style="font-size:11px;white-space:normal;max-width:160px">${esc(sr.dep)}</td>
+      <td style="text-align:center">${emgHtml}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-s btn-sm" onclick="copyRow(${i})">📋 Copy</button>
+        <button class="btn btn-d btn-sm" style="margin-top:3px" onclick="delRow(${i})">🗑️</button>
+      </td>
+    </tr>`;
+  });
+  h += `</tbody></table></div>`;
+  w.innerHTML = h;
+}
+
+// ─────────────────────────────────────────────────────
+// 10. COPY
+// ─────────────────────────────────────────────────────
+function copyRow(i) {
+  clip(buildRow(srList[i]));
+  toast(`📋 Baris No.${srList[i].no} disalin (36 kolom) → paste ke Excel!`);
+}
+
+function copyAll() {
+  if (!srList.length) { toast('⚠️ Tidak ada data'); return; }
+  const hdr = ['NO','DATE IN','DATE OUT','SUPTD','MANAGER','GM','DIRPOD',
+    'SEND TO ANGGARAN','MEMO','HPS/OE','NOMOR SR BAGIAN','NO SPRR / SR DEPT',
+    'NO SR (PBJP)','TRACKING (NUMBER)','NAMA PEKERJAAN JASA','LINGKUP PEKERJAAN JASA',
+    'JENIS ANGGARAN','COST CENTER','G/L ACCOUNT','EQUIPMENT','LOKASI PABRIK',
+    'REQUESTER','DEPARTEMENT','NOMOR WR','NOMOR WO','NOMOR PR','DUR','SPPH','NOMOR PO',
+    'BASTP','PROGRES PAYMENT','REALISASI 100%','PROGRES STATUS',
+    'KETERANGAN SUMBER HPS','NO MEMO EMERGENCY','KET LAIN-LAIN'].join('\t');
+  clip([hdr, ...srList.map(buildRow)].join('\n'));
+  toast(`📋 ${srList.length} baris disalin → paste ke Excel!`);
+}
+
+function clip(t) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).catch(() => fbClip(t));
+  } else fbClip(t);
+}
+function fbClip(t) {
+  const ta = document.createElement('textarea');
+  ta.value = t;
+  Object.assign(ta.style, {position:'fixed',left:'-9999px',top:'0'});
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+// ─────────────────────────────────────────────────────
+// 11. MANUAL ADD
+// ─────────────────────────────────────────────────────
+function addManual() {
+  const gv = id => (document.getElementById(id)?.value||'').trim();
+  const {lastNo, lastJP, dateIn: cd} = cfg();
+  const n   = lastNo + 1 + srList.length;
+  const j   = lastJP + 1 + srList.length;
+  const bag = gv('m-bag');
+  const req = gv('m-req');
+  const k   = kode(req, bag);
+
+  srList.push({
+    no: n, dateIn: cd,
+    hps:     gv('m-hps'),
+    noBag:   bag,
+    noDept:  gv('m-dept-no'),
+    pbjp:    genPBJP(n, cd),
+    tracking:genJP(j, k),
+    nama:    gv('m-nama').substring(0,40),
+    ja:      gv('m-ja'),
+    cc:      gv('m-cc'),
+    gl:      gv('m-gl'),
+    req,
+    dep:     gv('m-dep'),
+    emg:     gv('m-emg'),
+    _fn:     'Manual',
+  });
+  updateCnt(); render(); sw('h');
+  toast('✅ SR manual ditambahkan!');
+  ['m-bag','m-dept-no','m-nama','m-hps','m-cc','m-gl','m-req','m-dep'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('m-nc').textContent = '0/40';
+}
+
+// ─────────────────────────────────────────────────────
+// 12. EXPORT CSV
+// ─────────────────────────────────────────────────────
+function doCSV() {
+  if (!srList.length) { toast('⚠️ Tidak ada data'); return; }
+  const hdr = ['NO','DATE IN','DATE OUT','SUPTD','MANAGER','GM','DIRPOD',
+    'SEND TO ANGGARAN','MEMO','HPS/OE','NOMOR SR BAGIAN','NO SPRR / SR DEPT',
+    'NO SR (PBJP)','TRACKING','NAMA PEKERJAAN JASA','LINGKUP PEKERJAAN JASA',
+    'JENIS ANGGARAN','COST CENTER','G/L ACCOUNT','EQUIPMENT','LOKASI PABRIK',
+    'REQUESTER','DEPARTEMENT','NOMOR WR','NOMOR WO','NOMOR PR','DUR','SPPH','NOMOR PO',
+    'BASTP','PROGRES PAYMENT','REALISASI 100%','PROGRES STATUS',
+    'KETERANGAN SUMBER HPS','NO MEMO EMERGENCY','KET LAIN-LAIN'];
+  const rows = srList.map(sr =>
+    buildRow(sr).split('\t').map(v=>`"${v.replace(/"/g,'""')}"`).join(',')
+  );
+  const blob = new Blob(['\ufeff'+[hdr.join(','),...rows].join('\n')],
+    {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=`SR_Rekap_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ─────────────────────────────────────────────────────
+// 13. HELPERS
+// ─────────────────────────────────────────────────────
+function delRow(i) {
+  if (!confirm('Hapus SR ini?')) return;
+  srList.splice(i,1); reindex(); updateCnt(); render();
+}
+
+function resetAll() {
+  if (srList.length && !confirm('Reset semua data sesi ini?')) return;
+  srList = []; files = [];
+  fi.value = '';
+  document.getElementById('file-label').textContent = '';
+  document.getElementById('btn-go').disabled = true;
+  dz.innerHTML = `<div class="dz-ico">📄</div>
+    <p><strong>Klik di sini</strong> atau seret file PDF ke area ini</p>
+    <p style="margin-top:4px;font-size:11px;opacity:.7">Bisa banyak file sekaligus</p>`;
+  document.getElementById('log').textContent = 'Data direset.';
+  hideProg(); updateCnt(); render();
+}
+
+function updateCnt() {
+  const {lastNo, lastJP} = cfg();
+  document.getElementById('c-total').textContent = srList.length;
+  document.getElementById('c-done').textContent  = srList.length;
+  document.getElementById('c-no').textContent    = lastNo + 1 + srList.length;
+  document.getElementById('c-jp').textContent    = 'JP-' + (lastJP + 1 + srList.length);
+}
+
+function addLog(msg, type='') {
+  const el = document.getElementById('log');
+  const span = document.createElement('span');
+  span.className = type;
+  span.textContent = msg + '\n';
+  el.appendChild(span);
+  el.scrollTop = el.scrollHeight;
+}
+
+function showProg(pct, txt) {
+  document.getElementById('pw').style.display = 'block';
+  document.getElementById('pb').style.width = pct + '%';
+  document.getElementById('pt').textContent = txt;
+}
+function hideProg() { document.getElementById('pw').style.display = 'none'; }
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function sw(tab) {
+  ['h','m','g'].forEach(t => {
+    document.getElementById('pane-'+t).style.display = t===tab?'':'none';
+    document.getElementById('tab-'+t).classList.toggle('on', t===tab);
+  });
+}
+
+function iso(d) {
+  if (!d) return '';
+  if (typeof d === 'string') return d;
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+function rpFmt(n) {
+  if (!n) return '—';
+  return 'Rp ' + parseInt(n).toLocaleString('id-ID');
+}
+
+function esc(s) {
+  return (s||'').toString()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────────────────────
+// 14. INIT
+// ─────────────────────────────────────────────────────
+(function init() {
+  // Set tanggal hari ini
+  const d = new Date();
+  document.getElementById('cfg-date').value = iso(d);
+
+  // Load PDF.js
+  initPdfJs().then(() => {
+    // Aktifkan drop zone setelah library siap
+  });
+
+  recalc();
+  addLog('Aplikasi siap. Menunggu PDF.js load...', '');
+})();
+</script>
+</body>
+</html>
